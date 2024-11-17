@@ -127,6 +127,61 @@ function escape($conn, $string) {
             echo "<tr><td colspan='5'>Aucun produit trouvé</td></tr>";
         }
 
+        ?>
+        </tbody>
+    </table>
+
+    <h1>Ajouter une commande</h1>
+    <form action="create_order.php" method="post">
+        <label for="userId">ID Utilisateur:</label>
+        <input type="number" id="userId" name="userId" required>
+        <label for="productId">ID Produit:</label>
+        <input type="number" id="productId" name="productId" required>
+        
+        <label for="quantity">Quantité:</label>
+        <input type="number" id="quantity" name="quantity" required>
+        
+        <button type="submit">Ajouter</button>
+    </form>
+
+    <h1>Liste des commandes</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID Utilisateur</th>
+                <th>ID Produit</th>
+                <th>Date de Facture</th>
+                <th>Quantité</th>
+                <th>Total</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php
+        // Lire les commandes de la base de données
+        $sql = "SELECT invoiceId, userId, productId, invoiceDate, quantity, unitPrice,  total FROM invoices";
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            // Afficher les commandes
+            while($row = $result->fetch_assoc()) {
+                echo "<tr>
+                        <td>" . $row["userId"]. "</td>
+                        <td>" . $row["productId"]. "</td>
+                        <td>" . $row["invoiceDate"]. "</td>
+
+                        <td>" . $row["quantity"]. "</td>
+                        <td>" . $row["total"]. "</td>
+                        <td>
+                            <a href='update_order.php?id=" . $row["invoiceId"] . "'>Modifier</a>
+                            <a href='delete_order.php?id=" . $row["invoiceId"] . "'>Supprimer</a>
+                        </td>
+                      </tr>";
+            }
+        } else {
+            echo "<tr><td colspan='5'>Aucune commande trouvée</td></tr>";
+        }
+
         $conn->close();
         ?>
         </tbody>
