@@ -77,6 +77,55 @@ function escape($conn, $string) {
         } else {
             echo "<tr><td colspan='5'>Aucun utilisateur trouvé</td></tr>";
         }
+        ?>
+        </tbody>
+    </table>
+
+    <h1>Ajouter un produit</h1>
+    <form action="create_product.php" method="post">
+        <label for="name">Nom du produit:</label>
+        <input type="text" id="name" name="name" required>
+        <label for="price">Prix:</label>
+        <input type="number" step="0.01" id="price" name="price" required>
+        <label for="vendor">Vendeur:</label>
+        <input type="text" id="vendor" name="vendor" required>
+        <button type="submit">Ajouter</button>
+    </form>
+
+    <h1>Liste des produits</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Prix</th>
+                <th>Vendeur</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php
+        // Lire les produits de la base de données
+        $sql = "SELECT productId, name, price, vendor FROM products";
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            // Afficher les produits
+            while($row = $result->fetch_assoc()) {
+                echo "<tr>
+                        <td>" . $row["productId"]. "</td>
+                        <td>" . $row["name"]. "</td>
+                        <td>" . $row["price"]. "</td>
+                        <td>" . $row["vendor"]. "</td>
+                        <td>
+                            <a href='update_product.php?id=" . $row["productId"] . "'>Modifier</a>
+                            <a href='delete_product.php?id=" . $row["productId"] . "'>Supprimer</a>
+                        </td>
+                      </tr>";
+            }
+        } else {
+            echo "<tr><td colspan='5'>Aucun produit trouvé</td></tr>";
+        }
 
         $conn->close();
         ?>
