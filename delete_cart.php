@@ -13,21 +13,22 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Vérifier l'existence de la clé dans $_GET
-if (!isset($_GET['id'])) {
-    echo "Erreur: L'ID de la commande est manquant.";
+// Vérifier l'existence des clés dans $_GET
+if (!isset($_GET['userId']) || !isset($_GET['productId'])) {
+    echo "Erreur: Les données de l'article du panier sont manquantes.";
     $conn->close();
     exit();
 }
 
 // Échapper les chaînes
-$orderId = $conn->real_escape_string($_GET['id']);
+$userId = $conn->real_escape_string($_GET['userId']);
+$productId = $conn->real_escape_string($_GET['productId']);
 
-// Supprimer la commande de la base de données
-$sql = "DELETE FROM invoices WHERE invoiceId='$orderId'";
+// Supprimer l'article du panier de la base de données
+$sql = "DELETE FROM cart WHERE userId='$userId' AND productId='$productId'";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Commande supprimée avec succès";
+    echo "Article du panier supprimé avec succès";
 } else {
     echo "Erreur: " . $sql . "<br>" . $conn->error;
 }

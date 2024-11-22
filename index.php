@@ -30,6 +30,16 @@ function escape($conn, $string) {
 <body>
     <h1>Ecommerce-db</h1>
 
+    <div class="navbar">
+        <a href="index.php">Accueil</a>
+        <a href="add_user.php">Ajouter Utilisateur</a>
+        <a href="add_product.php">Ajouter Produit</a>
+        <a href="add_photo.php">Ajouter Photo</a>
+        <a href="add_rate.php">Ajouter Évaluation</a>
+        <a href="add_payment.php">Ajouter Paiement</a>
+        <a href="add_to_cart.php">Ajouter au Panier</a>
+    </div>
+
     <h2>Ajouter un utilisateur</h2>
     <form action="create_user.php" method="post">
         <label for="lastName">Nom:</label>
@@ -40,10 +50,18 @@ function escape($conn, $string) {
         <input type="email" id="email" name="email" required>
         <label for="passwd">Mot de passe:</label>
         <input type="password" id="passwd" name="passwd" required>
+        <label for="street">Rue:</label>
+        <input type="text" id="street" name="street" required>
+        <label for="city">Ville:</label>
+        <input type="text" id="city" name="city" required>
+        <label for="country">Pays:</label>
+        <input type="text" id="country" name="country" required>
+        <label for="postalCode">Code Postal:</label>
+        <input type="text" id="postalCode" name="postalCode" required>
         <button type="submit">Ajouter</button>
     </form>
 
-    <h2>Utilisateurs</h2>
+    <h2>Liste des utilisateurs</h2>
     <table>
         <thead>
             <tr>
@@ -51,31 +69,54 @@ function escape($conn, $string) {
                 <th>Nom</th>
                 <th>Prénom</th>
                 <th>Email</th>
+                <th>ID Adresse</th>
+                <th>Rue</th>
+                <th>Ville</th>
+                <th>Pays</th>
+                <th>Code Postal</th>
+                <th>Type de carte</th>
+                <th>Numéro de carte</th>
+                <th>Date d'expiration</th>
+                <th>CVV</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
         <?php
-        // Lire les utilisateurs de la base de données
-        $sql = "SELECT userId, lastName, firstName, email FROM users";
+        // Lire les utilisateurs et les paiements de la base de données
+        $sql = "SELECT users.userId, users.lastName, users.firstName, users.email, adresses.adressId, adresses.street, adresses.city, adresses.country, adresses.postalCode, payment.cardType, payment.cardNumber, payment.expirationDate, payment.cvv 
+                FROM users 
+                LEFT JOIN adresses ON users.userId = adresses.userId
+                LEFT JOIN payment ON users.userId = payment.userId";
         $result = $conn->query($sql);
 
         if ($result->num_rows > 0) {
-            // Afficher les utilisateurs
+            // Afficher les utilisateurs et les paiements
             while($row = $result->fetch_assoc()) {
                 echo "<tr>
                         <td>" . $row["userId"]. "</td>
                         <td>" . $row["lastName"]. "</td>
                         <td>" . $row["firstName"]. "</td>
                         <td>" . $row["email"]. "</td>
+                        <td>" . $row["adressId"]. "</td>
+                        <td>" . $row["street"]. "</td>
+                        <td>" . $row["city"]. "</td>
+                        <td>" . $row["country"]. "</td>
+                        <td>" . $row["postalCode"]. "</td>
+                        <td>" . $row["cardType"]. "</td>
+                        <td>" . $row["cardNumber"]. "</td>
+                        <td>" . $row["expirationDate"]. "</td>
+                        <td>" . $row["cvv"]. "</td>
                         <td>
-                            <a href='update_user.php?id=" . $row["userId"] . "'>Modifier</a>
-                            <a href='delete_user.php?id=" . $row["userId"] . "'>Supprimer</a>
+                            <a href='update_user.php?id=" . $row["userId"] . "'>Modifier utilisateur</a>
+                            <a href='delete_user.php?id=" . $row["userId"] . "'>Supprimer utilisateur</a>
+                            <a href='update_payment.php?id=" . $row["userId"] . "'>Modifier Paiement</a>
+                            <a href='delete_payment.php?id=" . $row["userId"] . "'>Supprimer Paiement</a>
                         </td>
                       </tr>";
             }
         } else {
-            echo "<tr><td colspan='5'>Aucun utilisateur trouvé</td></tr>";
+            echo "<tr><td colspan='14'>Aucun utilisateur trouvé</td></tr>";
         }
         ?>
         </tbody>
@@ -100,6 +141,8 @@ function escape($conn, $string) {
                 <th>Nom</th>
                 <th>Prix</th>
                 <th>Vendeur</th>
+                <th>Photos</th>
+                <th>Évaluations</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -112,14 +155,45 @@ function escape($conn, $string) {
         if ($result->num_rows > 0) {
             // Afficher les produits
             while($row = $result->fetch_assoc()) {
+                $productId = $row["productId"];
+
+                // Récupérer les photos associées au produit
+                $photoSql = "SELECT photoId, productId, image FROM photos WHERE productId='$productId'";
+                $photoResult = $conn->query($photoSql);
+                $photos = [];
+                while ($photoRow = $photoResult->fetch_assoc()) {
+                    $photos[] = '<div style="display:inline-block;position:relative;">
+                                    <img src="data:image/jpeg;base64,' . base64_encode($photoRow['image']) . '" width="50" height="50"/>
+                                    <a href="delete_photo.php?id=' . $photoRow['photoId'] . '" style="position:absolute;top:0;right:0;color:red;">X</a>
+                                 </div>';
+                }
+                $photoHtml = implode(' ', $photos);
+
+                // Récupérer les évaluations associées au produit
+                $rateSql = "SELECT rateId, userId, productId, stars, comment FROM rates WHERE productId='$productId'";
+                $rateResult = $conn->query($rateSql);
+                $rates = [];
+                while ($rateRow = $rateResult->fetch_assoc()) {
+                    $rates[] = '<div>
+                                    <strong>' . $rateRow['stars'] . ' étoiles</strong> - ' . $rateRow['comment'] . '
+                                    <a href="update_rate.php?id=' . $rateRow['rateId'] . '">Modifier</a>
+                                    <a href="delete_rate.php?id=' . $rateRow['rateId'] . '">Supprimer</a>
+                                </div>';
+                }
+                $rateHtml = implode('<br>', $rates);
+
                 echo "<tr>
                         <td>" . $row["productId"]. "</td>
                         <td>" . $row["name"]. "</td>
                         <td>" . $row["price"]. "</td>
                         <td>" . $row["vendor"]. "</td>
+                        <td>" . $photoHtml . "</td>
+                        <td>" . $rateHtml . "</td>
                         <td>
                             <a href='update_product.php?id=" . $row["productId"] . "'>Modifier</a>
                             <a href='delete_product.php?id=" . $row["productId"] . "'>Supprimer</a>
+                            <a href='add_photo.php?id=" . $row["productId"] . "'>Ajouter Photo</a>
+                            <a href='add_rate.php?id=" . $row["productId"] . "'>Ajouter Évaluation</a>
                         </td>
                       </tr>";
             }
@@ -180,6 +254,42 @@ function escape($conn, $string) {
             }
         } else {
             echo "<tr><td colspan='5'>Aucune commande trouvée</td></tr>";
+        }
+
+        ?>
+        </tbody>
+    </table>
+
+    <h1>Liste des articles du panier</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID Utilisateur</th>
+                <th>ID Produit</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php
+
+        // Lire les articles du panier de la base de données
+        $sql = "SELECT userId, productId FROM cart";
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            // Afficher les articles du panier
+            while($row = $result->fetch_assoc()) {
+                echo "<tr>
+                        <td>" . $row["userId"]. "</td>
+                        <td>" . $row["productId"]. "</td>
+                        <td>
+                            <a href='update_cart.php?userId=" . $row["userId"] . "&productId=" . $row["productId"] . "'>Modifier</a>
+                            <a href='delete_cart.php?userId=" . $row["userId"] . "&productId=" . $row["productId"] . "'>Supprimer</a>
+                        </td>
+                      </tr>";
+            }
+        } else {
+            echo "<tr><td colspan='3'>Aucun article trouvé dans le panier</td></tr>";
         }
 
         $conn->close();

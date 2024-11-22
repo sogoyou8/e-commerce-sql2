@@ -76,6 +76,18 @@ if ($conn->query($sql) === TRUE) {
     echo "Erreur: " . $sql . "<br>" . $conn->error;
 }
 
+// Échapper les chaînes
+$adressId = $conn->real_escape_string($_GET['id']);
+
+// Supprimer l'adresse de la base de données
+$sql = "DELETE FROM adresses WHERE adressId='$adressId'";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Adresse supprimée avec succès";
+} else {
+    echo "Erreur: " . $sql . "<br>" . $conn->error;
+}
+
 $conn->close();
 
 // Rediriger vers la page principale

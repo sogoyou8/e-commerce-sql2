@@ -13,16 +13,21 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Échapper les chaînes
-$userId = $conn->real_escape_string($_POST['userId']);
-$productId = $conn->real_escape_string($_POST['productId']);
-$quantity = $conn->real_escape_string($_POST['quantity']);
+// Vérifier l'existence de la clé dans $_GET
+if (!isset($_GET['id'])) {
+    echo "Erreur: L'ID de l'utilisateur est manquant.";
+    $conn->close();
+    exit();
+}
 
-// Insérer la commande dans la base de données
-$sql = "INSERT INTO orders (userId, productId, quantity) VALUES ('$userId', '$productId', '$quantity')";
+// Échapper les chaînes
+$userId = $conn->real_escape_string($_GET['id']);
+
+// Supprimer le paiement de la base de données
+$sql = "DELETE FROM payment WHERE userId='$userId'";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Nouvelle commande ajoutée avec succès";
+    echo "Paiement supprimé avec succès";
 } else {
     echo "Erreur: " . $sql . "<br>" . $conn->error;
 }

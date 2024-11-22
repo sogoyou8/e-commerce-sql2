@@ -15,26 +15,22 @@ if ($conn->connect_error) {
 
 // Vérifier l'existence de la clé dans $_GET
 if (!isset($_GET['id'])) {
-    echo "Erreur: L'ID de la commande est manquant.";
+    echo "<script>alert('Erreur: L'ID de la photo est manquant.'); window.location.href='index.php';</script>";
     $conn->close();
     exit();
 }
 
 // Échapper les chaînes
-$orderId = $conn->real_escape_string($_GET['id']);
+$photoId = $conn->real_escape_string($_GET['id']);
 
-// Supprimer la commande de la base de données
-$sql = "DELETE FROM invoices WHERE invoiceId='$orderId'";
+// Supprimer la photo de la base de données
+$sql = "DELETE FROM photos WHERE photoId='$photoId'";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Commande supprimée avec succès";
+    echo "<script>alert('Photo supprimée avec succès'); window.location.href='index.php';</script>";
 } else {
-    echo "Erreur: " . $sql . "<br>" . $conn->error;
+    echo "<script>alert('Erreur: " . $conn->error . "'); window.location.href='index.php';</script>";
 }
 
 $conn->close();
-
-// Rediriger vers la page principale
-header("Location: index.php");
-exit();
 ?>

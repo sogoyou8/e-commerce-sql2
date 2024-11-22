@@ -13,14 +13,21 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Échapper les chaînes
-$orderId = $conn->real_escape_string($_GET['id']);
+// Vérifier l'existence de la clé dans $_GET
+if (!isset($_GET['id'])) {
+    echo "Erreur: L'ID de l'évaluation est manquant.";
+    $conn->close();
+    exit();
+}
 
-// Supprimer la commande de la base de données
-$sql = "DELETE FROM orders WHERE orderId='$orderId'";
+// Échapper les chaînes
+$rateId = $conn->real_escape_string($_GET['id']);
+
+// Supprimer l'évaluation de la base de données
+$sql = "DELETE FROM rates WHERE rateId='$rateId'";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Commande supprimée avec succès";
+    echo "Évaluation supprimée avec succès";
 } else {
     echo "Erreur: " . $sql . "<br>" . $conn->error;
 }
