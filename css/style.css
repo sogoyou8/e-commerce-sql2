@@ -9,7 +9,6 @@ body {
 h1, h2 {
     color: #333;
     text-align: center;
-    margin-top: 20px;
 }
 
 /* Styles pour la barre de navigation */
@@ -39,10 +38,12 @@ form {
     padding: 20px;
     background-color: #fff;
     border: 1px solid #ddd;
-    border-radius: 5px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
 }
 
-form label {
+label {
     display: block;
     margin-bottom: 8px;
     font-weight: bold;
@@ -72,7 +73,7 @@ form button {
 }
 
 form button:hover {
-    background-color: #555;
+    background-color: #45a049;
 }
 
 /* Styles pour les tables */
